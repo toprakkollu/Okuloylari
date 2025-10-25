@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <title>Oylama Sistemi</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#f4f4f4; padding:20px; }
+    .box { background:white; padding:20px; border-radius:10px; max-width:360px; margin:auto; box-shadow:0 4px 12px rgba(0,0,0,0.1); text-align:center; }
+    label, select { display:block; width:100%; margin-top:10px; font-size:14px; }
+    select { padding:8px; border-radius:8px; border:1px solid #ccc; }
+    button { margin-top:12px; padding:10px 14px; background:#007bff; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:600; }
+    button:hover { background:#005fcc; }
+    .msg { margin-top:10px; font-size:14px; color:#222; }
+    .total { margin-top:16px; font-size:20px; font-weight:bold; background:#fafafa; padding:10px; border-radius:8px; }
+    .progress-container { margin-top:15px; background:#ddd; border-radius:10px; height:25px; overflow:hidden; }
+    .progress-bar { height:100%; width:0%; background:#28a745; transition:width 0.3s; color:white; line-height:25px; font-size:13px; font-weight:bold; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>Oylama</h2>
+    <label>Okul Numaranız:</label>
+    <select id="numara"></select>
+
+    <label>Kaçıncı sınıfsınız?</label>
+    <select id="sinif"></select>
+
+    <button id="oyBtn">Oyla</button>
+    <div id="mesaj" class="msg"></div>
+
+    <div class="total">Toplam Oy: <span id="toplamOy">0</span></div>
+
+    <div class="progress-container">
+      <div id="progress" class="progress-bar">0%</div>
+    </div>
+    <div id="hedefYazi" style="margin-top:8px; font-size:13px; color:#555;">Hedef: 50 oy</div>
+  </div>
+
+  <script>
+    // dropdownları oluştur
+    const numaraSelect = document.getElementById('numara');
+    numaraSelect.innerHTML = '<option value="">-- Seçin --</option>' + 
+      Array.from({length:1000}, (_,i)=>`<option value="${i+1}">${i+1}</option>`).join('');
+    const sinifSelect = document.getElementById('sinif');
+    sinifSelect.innerHTML = '<option value="">-- Seçin --</option>' + 
+      Array.from({length:12}, (_,i)=>`<option value="${i+1}">${i+1}</option>`).join('');
+
+    const STORAGE_KEY = 'toplam_oy_sayaci_v3';
+    const HEDEF_KEY = 'oy_hedefi_v1';
+
+    const loadCount = () => parseInt(localStorage.getItem(STORAGE_KEY) || '0');
+    const saveCount = (n) => localStorage.setItem(STORAGE_KEY, n);
+    const loadGoal = () => parseInt(localStorage.getItem(HEDEF_KEY) || '50');
+    const saveGoal = (n) => localStorage.setItem(HEDEF_KEY, n);
+
+    const render = () => {
+      const count = loadCount();
+      const hedef = loadGoal();
+      const bar = document.getElementById('progress');
+      const yuzde = Math.min((count / hedef) * 100, 100).toFixed(1);
+      bar.style.width = yuzde + '%';
+      bar.textContent = yuzde + '%';
+      document.getElementById('toplamOy').textContent = count;
+      document.getElementById('hedefYazi').textContent = `Hedef: ${hedef} oy`;
+    };
+
+    document.getElementById('oyBtn').addEventListener('click', () => {
+      const numara = numaraSelect.value;
+      const sinif = sinifSelect.value;
+      const msg = document.getElementById('mesaj');
+      if (!numara || !sinif) { msg.textContent = 'Lütfen tüm bilgileri seçin.'; return; }
+      saveCount(loadCount() + 1);
+      msg.textContent = 'Oyunuz kaydedildi!';
+      numaraSelect.value = '';
+      sinifSelect.value = '';
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>
